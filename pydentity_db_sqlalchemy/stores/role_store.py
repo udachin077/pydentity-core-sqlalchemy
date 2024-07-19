@@ -23,7 +23,7 @@ class RoleStore(IRoleStore[TRole], Generic[TRole]):
     async def save_changes(self):
         await self.session.commit()
 
-    async def refresh(self, role):
+    async def refresh(self, role: TRole):
         await self.session.refresh(role)
 
     async def all(self) -> list[TRole]:

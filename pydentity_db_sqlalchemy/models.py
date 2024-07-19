@@ -10,17 +10,12 @@ from pydentity.types import TKey, GUID
 
 
 class DbModel(AsyncAttrs, DeclarativeBase):
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({','.join(
-            f"{k}={v!r}" for k, v in self.__dict__.items()
-            if not k.startswith(('_', '__',))
-        )})"
+    pass
 
 
 class IdentityUser(DbModel):
-    __tablename__ = "identity_users"
-    __table_args__ = {'extend_existing': True}
+    __tablename__ = "pydentity_users"
+    __table_args__ = {"extend_existing": True}
 
     if TYPE_CHECKING:
         access_failed_count: int
@@ -55,12 +50,12 @@ class IdentityUser(DbModel):
         two_factor_enabled: Mapped[bool] = mapped_column(sa.Boolean, default=False)
         username: Mapped[Optional[str]] = mapped_column(sa.String(256), nullable=True)
 
-        roles: Mapped[List['IdentityRole']] = relationship(
-            "IdentityRole", secondary="identity_user_roles", back_populates="users"
+        roles: Mapped[List["IdentityRole"]] = relationship(
+            "IdentityRole", secondary="pydentity_user_roles", back_populates="users"
         )
-        claims: Mapped[List['IdentityUserClaim']] = relationship("IdentityUserClaim", back_populates="user")
-        logins: Mapped[List['IdentityUserLogin']] = relationship("IdentityUserLogin", back_populates="user")
-        tokens: Mapped[List['IdentityUserToken']] = relationship("IdentityUserToken", back_populates="user")
+        claims: Mapped[List["IdentityUserClaim"]] = relationship("IdentityUserClaim", back_populates="user")
+        logins: Mapped[List["IdentityUserLogin"]] = relationship("IdentityUserLogin", back_populates="user")
+        tokens: Mapped[List["IdentityUserToken"]] = relationship("IdentityUserToken", back_populates="user")
 
         def __init__(
                 self,
@@ -81,8 +76,8 @@ class IdentityUser(DbModel):
 
 
 class IdentityRole(DbModel):
-    __tablename__ = "identity_roles"
-    __table_args__ = {'extend_existing': True}
+    __tablename__ = "pydentity_roles"
+    __table_args__ = {"extend_existing": True}
 
     if TYPE_CHECKING:
         concurrency_stamp: Optional[GUID]
@@ -95,8 +90,8 @@ class IdentityRole(DbModel):
         name: Mapped[Optional[str]] = mapped_column(sa.String(256), nullable=True)
         normalized_name: Mapped[Optional[str]] = mapped_column(sa.String(256), nullable=True, unique=True)
 
-        users: Mapped[List['IdentityUser']] = relationship(
-            "IdentityUser", secondary="identity_user_roles", back_populates="roles"
+        users: Mapped[List["IdentityUser"]] = relationship(
+            "IdentityUser", secondary="pydentity_user_roles", back_populates="roles"
         )
 
         def __init__(self, name: str = None, **kwargs):
@@ -111,24 +106,24 @@ class IdentityRole(DbModel):
 
 
 class IdentityUserRole(DbModel):
-    __tablename__ = "identity_user_roles"
-    __table_args__ = {'extend_existing': True}
+    __tablename__ = "pydentity_user_roles"
+    __table_args__ = {"extend_existing": True}
 
     if TYPE_CHECKING:
         user_id: TKey
         role_id: TKey
     else:
         user_id = sa.Column(sa.String(36), sa.ForeignKey(
-            "identity_users.id", ondelete="CASCADE"), primary_key=True
+            "pydentity_users.id", ondelete="CASCADE"), primary_key=True
                             )
         role_id = sa.Column(sa.String(36), sa.ForeignKey(
-            "identity_roles.id", ondelete="CASCADE"), primary_key=True
+            "pydentity_roles.id", ondelete="CASCADE"), primary_key=True
                             )
 
 
 class IdentityUserClaim(DbModel):
-    __tablename__ = "identity_user_claims"
-    __table_args__ = {'extend_existing': True}
+    __tablename__ = "pydentity_user_claims"
+    __table_args__ = {"extend_existing": True}
 
     if TYPE_CHECKING:
         claim_type: Optional[str]
@@ -138,16 +133,16 @@ class IdentityUserClaim(DbModel):
         claim_type: Mapped[Optional[str]] = mapped_column(sa.String(455), primary_key=True)
         claim_value: Mapped[Optional[str]] = mapped_column(sa.Text, nullable=True)
         user_id: Mapped[uuid.UUID] = mapped_column(
-            sa.ForeignKey("identity_users.id", ondelete="CASCADE"),
+            sa.ForeignKey("pydentity_users.id", ondelete="CASCADE"),
             primary_key=True
         )
 
-        user: Mapped['IdentityUser'] = relationship("IdentityUser", back_populates="claims")
+        user: Mapped["IdentityUser"] = relationship("IdentityUser", back_populates="claims")
 
 
 class IdentityUserLogin(DbModel):
-    __tablename__ = "identity_user_logins"
-    __table_args__ = {'extend_existing': True}
+    __tablename__ = "pydentity_user_logins"
+    __table_args__ = {"extend_existing": True}
 
     if TYPE_CHECKING:
         login_provider: str
@@ -159,16 +154,16 @@ class IdentityUserLogin(DbModel):
         provider_key: Mapped[str] = mapped_column(sa.String(256))
         provider_display_name: Mapped[Optional[str]] = mapped_column(sa.Text, nullable=True)
         user_id: Mapped[uuid.UUID] = mapped_column(sa.ForeignKey(
-            "identity_users.id", ondelete="CASCADE"),
+            "pydentity_users.id", ondelete="CASCADE"),
             primary_key=True
         )
 
-        user: Mapped['IdentityUser'] = relationship("IdentityUser", back_populates="logins")
+        user: Mapped["IdentityUser"] = relationship("IdentityUser", back_populates="logins")
 
 
 class IdentityUserToken(DbModel):
-    __tablename__ = "identity_user_tokens"
-    __table_args__ = {'extend_existing': True}
+    __tablename__ = "pydentity_user_tokens"
+    __table_args__ = {"extend_existing": True}
 
     if TYPE_CHECKING:
         login_provider: str
@@ -180,8 +175,8 @@ class IdentityUserToken(DbModel):
         name: Mapped[str] = mapped_column(sa.String(256))
         value: Mapped[Optional[str]] = mapped_column(sa.Text, nullable=True)
         user_id: Mapped[uuid.UUID] = mapped_column(
-            sa.ForeignKey("identity_users.id", ondelete="CASCADE"),
+            sa.ForeignKey("pydentity_users.id", ondelete="CASCADE"),
             primary_key=True
         )
 
-        user: Mapped['IdentityUser'] = relationship("IdentityUser", back_populates="tokens")
+        user: Mapped["IdentityUser"] = relationship("IdentityUser", back_populates="tokens")

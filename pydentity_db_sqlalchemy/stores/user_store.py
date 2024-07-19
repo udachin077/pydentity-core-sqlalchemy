@@ -72,12 +72,12 @@ class UserStore(
     async def save_changes(self):
         await self.session.commit()
 
-    async def refresh(self, user):
+    async def refresh(self, user: TUser):
         await self.session.refresh(user)
 
     async def all(self) -> list[TUser]:
-        statement = select(self.user_model)
-        return list((await self.session.scalars(statement)).all())
+        query = select(self.user_model)
+        return list((await self.session.scalars(query)).all())
 
     async def create(self, user: TUser) -> IdentityResult:
         if user is None:
@@ -109,16 +109,16 @@ class UserStore(
         if user_id is None:
             raise ArgumentNoneException("user_id")
 
-        statement = select(self.user_model).where(self.user_model.id == user_id)
-        return await self._find_user(statement)
+        query = select(self.user_model).where(self.user_model.id == user_id)
+        return await self._find_user(query)
 
     async def find_by_name(self, normalized_username: str) -> Optional[TUser]:
         if normalized_username is None:
             raise ArgumentNoneException("normalized_username")
 
-        statement = select(self.user_model).where(
+        query = select(self.user_model).where(
             self.user_model.normalized_username == normalized_username)  # type: ignore
-        return await self._find_user(statement)
+        return await self._find_user(query)
 
     async def get_user_id(self, user: TUser) -> str:
         if user is None:
@@ -154,8 +154,8 @@ class UserStore(
         if normalized_email is None:
             raise ArgumentNoneException("normalized_email")
 
-        statement = select(self.user_model).where(self.user_model.normalized_email == normalized_email)  # type: ignore
-        return await self._find_user(statement)
+        query = select(self.user_model).where(self.user_model.normalized_email == normalized_email)  # type: ignore
+        return await self._find_user(query)
 
     async def get_email(self, user: TUser) -> Optional[str]:
         if user is None:
@@ -298,8 +298,8 @@ class UserStore(
             raise ArgumentNoneException("normalized_role_name")
 
         if role := await self._find_role(normalized_role_name):
-            statement = insert(self.user_role_model).values(user_id=user.id, role_id=role.id)
-            await self.session.execute(statement)
+            query = insert(self.user_role_model).values(user_id=user.id, role_id=role.id)
+            await self.session.execute(query)
             return
 
         raise RoleNotFound(normalized_role_name)
@@ -308,14 +308,14 @@ class UserStore(
         if user is None:
             raise ArgumentNoneException("user")
 
-        statement = select(self.role_model.name).where(
+        query = select(self.role_model.name).where(
             and_(
                 self.user_model.id == user.id,
                 self.user_model.id == self.user_role_model.user_id,
                 self.role_model.id == self.user_role_model.role_id
             )
         )
-        roles = (await self.session.scalars(statement)).all()
+        roles = (await self.session.scalars(query)).all()
         return list(roles)
 
     async def get_users_in_role(self, normalized_role_name: str) -> list[TUser]:
@@ -333,13 +333,13 @@ class UserStore(
             raise ArgumentNoneException("normalized_role_name")
 
         if role := await self._find_role(normalized_role_name):
-            statement = select(self.user_role_model).where(
+            query = select(self.user_role_model).where(
                 and_(
                     self.user_role_model.user_id == user.id,
                     self.user_role_model.role_id == role.id
                 )
             )
-            result = await self.session.scalars(statement)
+            result = await self.session.scalars(query)
             return bool(result.one_or_none())
 
         return False
@@ -351,13 +351,13 @@ class UserStore(
             raise ArgumentNoneException("normalized_role_name")
 
         if role := await self._find_role(normalized_role_name):
-            statement = delete(self.user_role_model).where(
+            query = delete(self.user_role_model).where(
                 and_(
                     self.user_role_model.user_id == user.id,
                     self.user_role_model.role_id == role.id
                 )
             )
-            await self.session.execute(statement)
+            await self.session.execute(query)
 
     async def add_login(self, user: TUser, login: UserLoginInfo) -> None:
         if user is None:
@@ -374,23 +374,23 @@ class UserStore(
         if not provider_key:
             raise ArgumentNoneException("provider_key")
 
-        statement = select(self.user_login_model).where(
+        query = select(self.user_login_model).where(
             and_(
                 self.user_login_model.login_provider == login_provider,
                 self.user_login_model.provider_key == provider_key
             )
         )
 
-        if user_login := (await self.session.scalars(statement)).one_or_none():
-            statement = select(self.user_model).where(self.user_model.id == user_login.user_id)  # type: ignore
-            return await self._find_user(statement)
+        if user_login := (await self.session.scalars(query)).one_or_none():
+            query = select(self.user_model).where(self.user_model.id == user_login.user_id)  # type: ignore
+            return await self._find_user(query)
 
     async def get_logins(self, user: TUser) -> list[UserLoginInfo]:
         if user is None:
             raise ArgumentNoneException("user")
 
-        statement = select(self.user_login_model).where(self.user_login_model.user_id == user.id)  # type: ignore
-        user_logins = (await self.session.scalars(statement)).all()
+        query = select(self.user_login_model).where(self.user_login_model.user_id == user.id)  # type: ignore
+        user_logins = (await self.session.scalars(query)).all()
         return [self._create_user_login_info(ul) for ul in user_logins]
 
     async def remove_login(self, user: TUser, login_provider: str, provider_key: str) -> None:
@@ -401,14 +401,14 @@ class UserStore(
         if not provider_key:
             raise ArgumentNoneException("provider_key")
 
-        statement = delete(self.user_login_model).where(
+        query = delete(self.user_login_model).where(
             and_(
                 self.user_login_model.user_id == user.id,
                 self.user_login_model.login_provider == login_provider,
                 self.user_login_model.provider_key == provider_key
             )
         )
-        await self.session.execute(statement)
+        await self.session.execute(query)
 
     async def get_token(self, user: TUser, login_provider: str, name: str) -> Optional[str]:
         if user is None:
@@ -429,14 +429,14 @@ class UserStore(
         if not name:
             raise ArgumentNoneException("name")
 
-        statement = delete(self.user_token_model).where(
+        query = delete(self.user_token_model).where(
             and_(
                 self.user_token_model.user_id == user.id,
                 self.user_token_model.login_provider == login_provider,
                 self.user_token_model.name == name
             )
         )
-        await self.session.execute(statement)
+        await self.session.execute(query)
 
     async def set_token(self, user: TUser, login_provider: str, name: str, value: Optional[str]) -> None:
         if user is None:
@@ -479,7 +479,7 @@ class UserStore(
         merged_codes = (await self.get_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName)) or ""
 
         if merged_codes:
-            return merged_codes.count(';') + 1
+            return merged_codes.count(";") + 1
 
         return 0
 
@@ -490,7 +490,7 @@ class UserStore(
             raise ArgumentNoneException("code")
 
         merged_codes = (await self.get_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName)) or ""
-        split_codes = merged_codes.split(';')
+        split_codes = merged_codes.split(";")
 
         if code in split_codes:
             split_codes.remove(code)
@@ -505,7 +505,7 @@ class UserStore(
         if not recovery_codes:
             raise ArgumentNoneException("recovery_codes")
 
-        merged_codes = ';'.join(recovery_codes)
+        merged_codes = ";".join(recovery_codes)
         return await self.set_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName, merged_codes)
 
     async def add_claims(self, user: TUser, *claims: Claim) -> None:
@@ -521,21 +521,24 @@ class UserStore(
         if user is None:
             raise ArgumentNoneException("user")
 
-        statement = select(self.user_claim_model).where(self.user_claim_model.user_id == user.id)  # type: ignore
-        user_claims = (await self.session.scalars(statement)).all()
+        query = (
+            select(self.user_claim_model)
+            .where(self.user_claim_model.user_id == user.id)  # type: ignore
+        )
+        user_claims = (await self.session.scalars(query)).all()
         return [self._create_claim(uc) for uc in user_claims]
 
     async def get_users_for_claim(self, claim: Claim) -> list[TUser]:
         if claim is None:
             raise ArgumentNoneException("claim")
 
-        statement = select(self.user_claim_model).where(
+        query = select(self.user_claim_model).where(
             and_(
                 self.user_claim_model.claim_type == claim.type,
                 self.user_claim_model.claim_value == claim.value
             )
         )
-        user_claims = (await self.session.scalars(statement)).all()
+        user_claims = (await self.session.scalars(query)).all()
         return [await uc.awaitable_attrs.user for uc in user_claims]
 
     async def remove_claims(self, user: TUser, *claims: Claim) -> None:
@@ -545,7 +548,7 @@ class UserStore(
             raise ArgumentNoneException("claims")
 
         for claim in claims:
-            statement = select(self.user_claim_model).where(
+            query = select(self.user_claim_model).where(
                 and_(
                     self.user_claim_model.user_id == user.id,
                     self.user_claim_model.claim_type == claim.type,
@@ -553,7 +556,7 @@ class UserStore(
                 )
             )
 
-            matches_claims = (await self.session.scalars(statement)).all()
+            matches_claims = (await self.session.scalars(query)).all()
 
             for c in matches_claims:
                 await self.session.delete(c)
@@ -568,7 +571,7 @@ class UserStore(
         if new_claim is None:
             raise ArgumentNoneException("new_claim")
 
-        statement = update(self.user_claim_model).where(
+        query = update(self.user_claim_model).where(
             and_(
                 self.user_claim_model.user_id == user.id,
                 self.user_claim_model.claim_type == claim.type,
@@ -576,7 +579,7 @@ class UserStore(
             )
         ).values(claim_type=new_claim.type, claim_value=new_claim.value)
 
-        await self.session.execute(statement)
+        await self.session.execute(query)
 
     def _create_claim(self, model: TUserClaim) -> Claim:  # noqa
         return Claim(
@@ -615,18 +618,18 @@ class UserStore(
         )
 
     async def _find_token(self, user: TUser, login_provider: str, name: str) -> TUserToken:
-        statement = select(self.user_token_model).where(
+        query = select(self.user_token_model).where(
             and_(
                 self.user_token_model.user_id == user.id,
                 self.user_token_model.login_provider == login_provider,
                 self.user_token_model.name == name
             )
         )
-        result = await self.session.scalars(statement)
+        result = await self.session.scalars(query)
         return result.one_or_none()
 
-    async def _find_user(self, statement) -> Optional[TUser]:
-        result = await self.session.scalars(statement)
+    async def _find_user(self, query) -> Optional[TUser]:
+        result = await self.session.scalars(query)
         return result.one_or_none()
 
     async def _find_role(self, name: str) -> Optional[TRole]:
