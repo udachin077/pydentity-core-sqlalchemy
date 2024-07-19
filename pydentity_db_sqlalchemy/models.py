@@ -39,7 +39,7 @@ class IdentityUser(DbModel):
         two_factor_enabled: bool
         username: Optional[str]
     else:
-        access_failed_count: Mapped[int] = mapped_column(sa.Boolean, default=0)
+        access_failed_count: Mapped[int] = mapped_column(sa.Integer, default=0)
         concurrency_stamp: Mapped[Optional[uuid.UUID]] = mapped_column(sa.String(36), nullable=True)
         email: Mapped[Optional[str]] = mapped_column(sa.String(256), nullable=True)
         email_confirmed: Mapped[bool] = mapped_column(sa.Boolean, default=False)
