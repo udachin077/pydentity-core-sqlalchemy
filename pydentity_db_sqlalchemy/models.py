@@ -66,9 +66,6 @@ class IdentityUser(DbModel):
                 self,
                 username: str = None,
                 email: str = None,
-                phone_number: str = None,
-                lockout_enabled: bool = True,
-                two_factor_enabled: bool = False,
                 **kwargs
         ):
             super().__init__(
@@ -76,9 +73,6 @@ class IdentityUser(DbModel):
                 security_stamp=str(uuid.uuid4()),
                 username=username,
                 email=email,
-                lockout_enabled=lockout_enabled,
-                phone_number=phone_number,
-                two_factor_enabled=two_factor_enabled,
                 **kwargs
             )
 
