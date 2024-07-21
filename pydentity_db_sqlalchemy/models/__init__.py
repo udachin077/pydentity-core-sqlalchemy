@@ -82,17 +82,6 @@ from uuid import uuid4
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, declared_attr, relationship
 
-__all__ = (
-    'Model',
-    'IdentityUser',
-    'IdentityRole',
-    'IdentityUserRole',
-    'IdentityUserClaim',
-    'IdentityUserLogin',
-    'IdentityUserToken',
-    'IdentityRoleClaim',
-)
-
 from .abstract import (
     Model,
     AbstractIdentityUser,
@@ -102,6 +91,17 @@ from .abstract import (
     AbstractIdentityUserLogin,
     AbstractIdentityUserToken,
     AbstractIdentityRoleClaim
+)
+
+__all__ = (
+    'Model',
+    'IdentityUser',
+    'IdentityRole',
+    'IdentityUserRole',
+    'IdentityUserClaim',
+    'IdentityUserLogin',
+    'IdentityUserToken',
+    'IdentityRoleClaim',
 )
 
 
