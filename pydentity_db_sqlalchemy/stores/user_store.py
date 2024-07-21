@@ -17,15 +17,15 @@ from pydentity.abc.stores import (
     IUserTwoFactorStore,
     IUserStore
 )
-from pydentity.exc import ArgumentNoneException
+from pydentity.exc import ArgumentNoneException, InvalidOperationException
 from pydentity.identity_result import IdentityResult
+from pydentity.resources import Resources
 from pydentity.security.claims import Claim
 from pydentity.types import TRole, TUser, TUserRole, TUserClaim, TUserLogin, TUserToken
 from pydentity.user_login_info import UserLoginInfo
 from sqlalchemy import select, delete, insert, update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from pydentity_db_sqlalchemy.exc import RoleNotFound
 from pydentity_db_sqlalchemy.models import (
     IdentityUser,
     IdentityRole,
@@ -34,6 +34,8 @@ from pydentity_db_sqlalchemy.models import (
     IdentityUserLogin,
     IdentityUserToken
 )
+
+__all__ = ('UserStore',)
 
 
 class UserStore(
@@ -59,9 +61,9 @@ class UserStore(
     user_login_model: Type[TUserLogin] = IdentityUserLogin
     user_token_model: Type[TUserToken] = IdentityUserToken
 
-    InternalLoginProvider: Final[str] = "[FastAPIUserStore]"
-    AuthenticatorKeyTokenName: Final[str] = "AuthenticatorKey"
-    RecoveryCodeTokenName: Final[str] = "RecoveryCodes"
+    InternalLoginProvider: Final[str] = '[FastAPIUserStore]'
+    AuthenticatorKeyTokenName: Final[str] = 'AuthenticatorKey'
+    RecoveryCodeTokenName: Final[str] = 'RecoveryCodes'
 
     def __init__(self, session: AsyncSession):
         self.session: AsyncSession = session
@@ -81,7 +83,7 @@ class UserStore(
 
     async def create(self, user: TUser) -> IdentityResult:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         self.session.add(user)
         await self.save_changes()
@@ -90,7 +92,7 @@ class UserStore(
 
     async def update(self, user: TUser) -> IdentityResult:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.concurrency_stamp = str(uuid4())
         await self.save_changes()
@@ -99,7 +101,7 @@ class UserStore(
 
     async def delete(self, user: TUser) -> IdentityResult:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         await self.session.delete(user)
         await self.save_changes()
@@ -107,14 +109,14 @@ class UserStore(
 
     async def find_by_id(self, user_id: str) -> Optional[TUser]:
         if user_id is None:
-            raise ArgumentNoneException("user_id")
+            raise ArgumentNoneException('user_id')
 
         query = select(self.user_model).where(self.user_model.id == user_id)
         return await self._find_user(query)
 
     async def find_by_name(self, normalized_username: str) -> Optional[TUser]:
         if normalized_username is None:
-            raise ArgumentNoneException("normalized_username")
+            raise ArgumentNoneException('normalized_username')
 
         query = select(self.user_model).where(
             self.user_model.normalized_username == normalized_username)  # type: ignore
@@ -122,191 +124,191 @@ class UserStore(
 
     async def get_user_id(self, user: TUser) -> str:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return str(user.id)
 
     async def get_username(self, user: TUser) -> Optional[str]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.username
 
     async def set_username(self, user: TUser, username: Optional[str]) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.username = username
 
     async def get_normalized_username(self, user: TUser) -> Optional[str]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.normalized_username
 
     async def set_normalized_username(self, user: TUser, normalized_name: Optional[str]) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.normalized_username = normalized_name
 
     async def find_by_email(self, normalized_email: str) -> Optional[TUser]:
         if normalized_email is None:
-            raise ArgumentNoneException("normalized_email")
+            raise ArgumentNoneException('normalized_email')
 
         query = select(self.user_model).where(self.user_model.normalized_email == normalized_email)  # type: ignore
         return await self._find_user(query)
 
     async def get_email(self, user: TUser) -> Optional[str]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.email
 
     async def set_email(self, user: TUser, email: Optional[str]) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.email = email
 
     async def get_email_confirmed(self, user: TUser) -> bool:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.email and user.email_confirmed
 
     async def get_normalized_email(self, user: TUser) -> Optional[str]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.normalized_email
 
     async def set_normalized_email(self, user: TUser, normalized_email: Optional[str]) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.normalized_email = normalized_email
 
     async def set_email_confirmed(self, user: TUser, confirmed: bool) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.email_confirmed = confirmed
 
     async def get_password_hash(self, user: TUser) -> Optional[str]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.password_hash
 
     async def has_password(self, user: TUser) -> bool:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return bool(user.password_hash)
 
     async def set_password_hash(self, user: TUser, password_hash: str) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.password_hash = password_hash
 
     async def get_phone_number(self, user: TUser) -> Optional[str]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.phone_number
 
     async def set_phone_number(self, user: TUser, phone_number: Optional[str]) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.phone_number = phone_number
 
     async def get_phone_number_confirmed(self, user: TUser) -> bool:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.phone_number and user.phone_number_confirmed
 
     async def set_phone_number_confirmed(self, user: TUser, confirmed: bool) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.phone_number_confirmed = confirmed
 
     async def get_access_failed_count(self, user: TUser) -> int:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.access_failed_count
 
     async def get_lockout_enabled(self, user: TUser) -> bool:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.lockout_enabled
 
     async def get_lockout_end_date(self, user: TUser) -> Optional[datetime]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.lockout_end
 
     async def increment_access_failed_count(self, user: TUser) -> int:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.access_failed_count + 1
 
     async def reset_access_failed_count(self, user: TUser) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.access_failed_count = 0
 
     async def set_lockout_enabled(self, user: TUser, enabled: bool) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.lockout_enabled = enabled
 
     async def set_lockout_end_date(self, user: TUser, lockout_end: Optional[datetime]) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.lockout_end = lockout_end
 
     async def get_security_stamp(self, user: TUser) -> Optional[str]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return str(user.security_stamp) if user.security_stamp else None
 
     async def set_security_stamp(self, user: TUser, stamp: str) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if not stamp:
-            raise ArgumentNoneException("stamp")
+            raise ArgumentNoneException('stamp')
 
         user.security_stamp = stamp
 
     async def add_to_role(self, user: TUser, normalized_role_name: str) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if not normalized_role_name:
-            raise ArgumentNoneException("normalized_role_name")
+            raise ArgumentNoneException('normalized_role_name')
 
         if role := await self._find_role(normalized_role_name):
             query = insert(self.user_role_model).values(user_id=user.id, role_id=role.id)
             await self.session.execute(query)
             return
 
-        raise RoleNotFound(normalized_role_name)
+        raise InvalidOperationException(Resources.RoleNotFound(normalized_role_name))
 
     async def get_roles(self, user: TUser) -> list[str]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         query = select(self.role_model.name).where(
             and_(
@@ -320,17 +322,17 @@ class UserStore(
 
     async def get_users_in_role(self, normalized_role_name: str) -> list[TUser]:
         if not normalized_role_name:
-            raise ArgumentNoneException("normalized_role_name")
+            raise ArgumentNoneException('normalized_role_name')
 
         if role := await self._find_role(normalized_role_name):
             users: list[TUser] = await role.awaitable_attrs.users
             return users
 
-        raise RoleNotFound(normalized_role_name)
+        raise InvalidOperationException(Resources.RoleNotFound(normalized_role_name))
 
     async def is_in_role(self, user: TUser, normalized_role_name: str) -> bool:
         if not normalized_role_name:
-            raise ArgumentNoneException("normalized_role_name")
+            raise ArgumentNoneException('normalized_role_name')
 
         if role := await self._find_role(normalized_role_name):
             query = select(self.user_role_model).where(
@@ -346,9 +348,9 @@ class UserStore(
 
     async def remove_from_role(self, user: TUser, normalized_role_name: str) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if not normalized_role_name:
-            raise ArgumentNoneException("normalized_role_name")
+            raise ArgumentNoneException('normalized_role_name')
 
         if role := await self._find_role(normalized_role_name):
             query = delete(self.user_role_model).where(
@@ -361,18 +363,18 @@ class UserStore(
 
     async def add_login(self, user: TUser, login: UserLoginInfo) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if login is None:
-            raise ArgumentNoneException("login")
+            raise ArgumentNoneException('login')
 
         self.session.add(self._create_user_login(user, login))
         await self.save_changes()
 
     async def find_by_login(self, login_provider: str, provider_key: str) -> Optional[TUser]:
         if not login_provider:
-            raise ArgumentNoneException("login_provider")
+            raise ArgumentNoneException('login_provider')
         if not provider_key:
-            raise ArgumentNoneException("provider_key")
+            raise ArgumentNoneException('provider_key')
 
         query = select(self.user_login_model).where(
             and_(
@@ -387,7 +389,7 @@ class UserStore(
 
     async def get_logins(self, user: TUser) -> list[UserLoginInfo]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         query = select(self.user_login_model).where(self.user_login_model.user_id == user.id)  # type: ignore
         user_logins = (await self.session.scalars(query)).all()
@@ -395,11 +397,11 @@ class UserStore(
 
     async def remove_login(self, user: TUser, login_provider: str, provider_key: str) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if not login_provider:
-            raise ArgumentNoneException("login_provider")
+            raise ArgumentNoneException('login_provider')
         if not provider_key:
-            raise ArgumentNoneException("provider_key")
+            raise ArgumentNoneException('provider_key')
 
         query = delete(self.user_login_model).where(
             and_(
@@ -412,22 +414,22 @@ class UserStore(
 
     async def get_token(self, user: TUser, login_provider: str, name: str) -> Optional[str]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if not login_provider:
-            raise ArgumentNoneException("login_provider")
+            raise ArgumentNoneException('login_provider')
         if not name:
-            raise ArgumentNoneException("name")
+            raise ArgumentNoneException('name')
 
         if token := await self._find_token(user, login_provider, name):
             return token.value
 
     async def remove_token(self, user: TUser, login_provider: str, name: str) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if not login_provider:
-            raise ArgumentNoneException("login_provider")
+            raise ArgumentNoneException('login_provider')
         if not name:
-            raise ArgumentNoneException("name")
+            raise ArgumentNoneException('name')
 
         query = delete(self.user_token_model).where(
             and_(
@@ -440,11 +442,11 @@ class UserStore(
 
     async def set_token(self, user: TUser, login_provider: str, name: str, value: Optional[str]) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if not login_provider:
-            raise ArgumentNoneException("login_provider")
+            raise ArgumentNoneException('login_provider')
         if not name:
-            raise ArgumentNoneException("name")
+            raise ArgumentNoneException('name')
 
         if token := await self._find_token(user, login_provider, name):
             token.value = value
@@ -456,13 +458,13 @@ class UserStore(
 
     async def get_two_factor_enabled(self, user: TUser) -> bool:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         return user.two_factor_enabled
 
     async def set_two_factor_enabled(self, user: TUser, enabled: bool) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         user.two_factor_enabled = enabled
 
@@ -474,23 +476,23 @@ class UserStore(
 
     async def count_codes(self, user: TUser) -> int:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         merged_codes = (await self.get_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName)) or ""
 
         if merged_codes:
-            return merged_codes.count(";") + 1
+            return merged_codes.count(';') + 1
 
         return 0
 
     async def redeem_code(self, user: TUser, code: str) -> bool:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if not code:
-            raise ArgumentNoneException("code")
+            raise ArgumentNoneException('code')
 
         merged_codes = (await self.get_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName)) or ""
-        split_codes = merged_codes.split(";")
+        split_codes = merged_codes.split(';')
 
         if code in split_codes:
             split_codes.remove(code)
@@ -501,25 +503,25 @@ class UserStore(
 
     async def replace_codes(self, user: TUser, *recovery_codes: str) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if not recovery_codes:
-            raise ArgumentNoneException("recovery_codes")
+            raise ArgumentNoneException('recovery_codes')
 
-        merged_codes = ";".join(recovery_codes)
+        merged_codes = ';'.join(recovery_codes)
         return await self.set_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName, merged_codes)
 
     async def add_claims(self, user: TUser, *claims: Claim) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if not claims:
-            raise ArgumentNoneException("claims")
+            raise ArgumentNoneException('claims')
 
         self.session.add_all(self._create_user_claim(user, claim) for claim in claims)
         await self.save_changes()
 
     async def get_claims(self, user: TUser) -> list[Claim]:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
 
         query = (
             select(self.user_claim_model)
@@ -530,7 +532,7 @@ class UserStore(
 
     async def get_users_for_claim(self, claim: Claim) -> list[TUser]:
         if claim is None:
-            raise ArgumentNoneException("claim")
+            raise ArgumentNoneException('claim')
 
         query = select(self.user_claim_model).where(
             and_(
@@ -543,9 +545,9 @@ class UserStore(
 
     async def remove_claims(self, user: TUser, *claims: Claim) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if not claims:
-            raise ArgumentNoneException("claims")
+            raise ArgumentNoneException('claims')
 
         for claim in claims:
             query = select(self.user_claim_model).where(
@@ -565,11 +567,11 @@ class UserStore(
 
     async def replace_claim(self, user: TUser, claim: Claim, new_claim: Claim) -> None:
         if user is None:
-            raise ArgumentNoneException("user")
+            raise ArgumentNoneException('user')
         if claim is None:
-            raise ArgumentNoneException("claim")
+            raise ArgumentNoneException('claim')
         if new_claim is None:
-            raise ArgumentNoneException("new_claim")
+            raise ArgumentNoneException('new_claim')
 
         query = update(self.user_claim_model).where(
             and_(
