@@ -1,17 +1,21 @@
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-
-[project]
+[tool.poetry]
 name = "pydentity-db-sqlalchemy"
-version = "1.0.0"
-dependencies = [
-    "sqlalchemy>=2.0.31"
-]
+version = "0.1.0"
+description = "Database adapter for SQLAlchemy."
+authors = ["udachin077 <pypi.udachin@yandex.ru>"]
+license = "MIT"
+repository = "https://github.com/udachin077/pydentity-db-sqlalchemy.git"
 
-[tool.setuptools.packages.find]
-exclude = [
-    "tests*",
-    "examples*"
-]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+sqlalchemy = "^2.0.31"
+pydentity = { git = "https://github.com/udachin077/pydentity.git" }
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+pytest-asyncio = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
