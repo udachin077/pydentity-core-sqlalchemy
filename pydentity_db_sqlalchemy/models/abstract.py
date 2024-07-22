@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
 import sqlalchemy as sa
@@ -28,7 +28,7 @@ class AbstractIdentityUser(Model):
         email_confirmed: bool
         id: TKey
         lockout_enabled: bool
-        lockout_end: Optional[datetime.datetime]
+        lockout_end: Optional[datetime]
         normalized_email: Optional[str]
         normalized_username: Optional[str]
         password_hash: Optional[str]
@@ -43,7 +43,7 @@ class AbstractIdentityUser(Model):
         email: Mapped[Optional[str]] = mapped_column(sa.String(256), nullable=True)
         email_confirmed: Mapped[bool] = mapped_column(sa.Boolean, default=False)
         lockout_enabled: Mapped[bool] = mapped_column(sa.Boolean, default=True)
-        lockout_end: Mapped[Optional[datetime.datetime]] = mapped_column(sa.TIMESTAMP(timezone=True), nullable=True)
+        lockout_end: Mapped[Optional[datetime]] = mapped_column(sa.TIMESTAMP(timezone=True), nullable=True)
         normalized_email: Mapped[Optional[str]] = mapped_column(sa.String(256), nullable=True)
         normalized_username: Mapped[Optional[str]] = mapped_column(sa.String(256), nullable=True)
         password_hash: Mapped[Optional[str]] = mapped_column(sa.Text, nullable=True)

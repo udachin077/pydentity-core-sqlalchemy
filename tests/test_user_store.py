@@ -71,10 +71,8 @@ async def test_create(store, session):
     )
     result = await store.create(user)
     assert result.succeeded is True
-    found = await session.execute(
-        select(IdentityUser).where(IdentityUser.normalized_email == user.normalized_email)
-    )
-    assert found.scalar_one_or_none() is not None
+    found = await _find_by_email(session, 'user@email.com')
+    assert found is not None
 
     with pytest.raises(IntegrityError):
         _user = IdentityUser(

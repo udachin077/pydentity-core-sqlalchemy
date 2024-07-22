@@ -18,8 +18,8 @@
         PRIMARY KEY (id)
     )
 
-    CREATE UNIQUE INDEX "IDX_PYDENTITY_USERS_NORMALIZED_EMAIL" ON pydentity_users (normalized_email)
-    CREATE UNIQUE INDEX "IDX_PYDENTITY_USERS_NORMALIZED_USERNAME" ON pydentity_users (normalized_username)
+    CREATE UNIQUE INDEX "idx_pydentity_users_normalized_email" ON pydentity_users (normalized_email)
+    CREATE UNIQUE INDEX "idx_pydentity_users_normalized_username" ON pydentity_users (normalized_username)
 
     CREATE TABLE pydentity_roles (
         id VARCHAR(450) NOT NULL,
@@ -29,7 +29,7 @@
         PRIMARY KEY (id)
     )
 
-    CREATE UNIQUE INDEX "IDX_PYDENTITY_ROLES_NORMALIZED_NAME" ON pydentity_roles (normalized_name)
+    CREATE UNIQUE INDEX "idx_pydentity_roles_normalized_name" ON pydentity_roles (normalized_name)
 
     CREATE TABLE pydentity_user_roles (
         user_id VARCHAR(450) NOT NULL,
@@ -82,7 +82,7 @@ from uuid import uuid4
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, declared_attr, relationship
 
-from .abstract import (
+from pydentity_db_sqlalchemy.models.abstract import (
     Model,
     AbstractIdentityUser,
     AbstractIdentityRole,
@@ -196,6 +196,9 @@ class IdentityRoleClaim(AbstractIdentityRoleClaim):
         return relationship('IdentityRole', back_populates='claims')
 
 
-sa.Index('IDX_PYDENTITY_USERS_NORMALIZED_EMAIL', IdentityUser.normalized_email, unique=True)
-sa.Index('IDX_PYDENTITY_USERS_NORMALIZED_USERNAME', IdentityUser.normalized_username, unique=True)
-sa.Index('IDX_PYDENTITY_ROLES_NORMALIZED_NAME', IdentityRole.normalized_name, unique=True)
+sa.UniqueConstraint('normalized_email', IdentityUser.normalized_email)
+sa.UniqueConstraint('normalized_username', IdentityUser.normalized_username)
+sa.UniqueConstraint('normalized_name', IdentityRole.normalized_name)
+sa.Index('idx_pydentity_users_normalized_email', IdentityUser.normalized_email, unique=True)
+sa.Index('idx_pydentity_users_normalized_username', IdentityUser.normalized_username, unique=True)
+sa.Index('idx_pydentity_roles_normalized_name', IdentityRole.normalized_name, unique=True)
