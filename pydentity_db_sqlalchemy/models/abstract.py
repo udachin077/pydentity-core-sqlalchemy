@@ -6,6 +6,17 @@ from pydentity.types import TKey, GUID
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+__all__ = (
+    'Model',
+    'AbstractIdentityUser',
+    'AbstractIdentityRole',
+    'AbstractIdentityUserRole',
+    'AbstractIdentityUserClaim',
+    'AbstractIdentityRoleClaim',
+    'AbstractIdentityUserToken',
+    'AbstractIdentityUserLogin'
+)
+
 MAX_KEY_LENGTH = 128
 
 
