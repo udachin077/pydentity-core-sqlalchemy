@@ -1,16 +1,19 @@
 [tool.poetry]
 name = "pydentity-db-sqlalchemy"
-version = "0.1.0"
+version = "0.1.1"
 description = "Database adapter for SQLAlchemy."
-authors = ["udachin077 <pypi.udachin@yandex.ru>"]
+authors = ["Udachin Ivan <pypi.udachin@yandex.ru>"]
 license = "MIT"
+homepage = "https://github.com/udachin077/pydentity-db-sqlalchemy"
 repository = "https://github.com/udachin077/pydentity-db-sqlalchemy.git"
-
+exclude = [
+    "tests",
+    "example"
+]
 
 [tool.poetry.dependencies]
 python = "^3.12"
 sqlalchemy = "^2.0.31"
-pydentity = { git = "https://github.com/udachin077/pydentity.git" }
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
