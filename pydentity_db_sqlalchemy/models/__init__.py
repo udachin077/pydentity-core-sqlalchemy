@@ -106,6 +106,16 @@ __all__ = (
 
 
 class IdentityUser(AbstractIdentityUser):
+    __personal_data__ = (
+        'id',
+        'username',
+        'email',
+        'email_confirmed',
+        'phone_number',
+        'phone_number_confirmed',
+        'two_factor_enabled'
+    )
+
     id: Mapped[str] = mapped_column(sa.String(450))
 
     @declared_attr
@@ -183,6 +193,7 @@ class IdentityUserLogin(AbstractIdentityUserLogin):
 
 
 class IdentityUserToken(AbstractIdentityUserToken):
+    __personal_data__ = ('value',)
 
     @declared_attr
     def user(self) -> Mapped['IdentityUser']:
