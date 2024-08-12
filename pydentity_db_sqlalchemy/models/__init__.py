@@ -127,11 +127,11 @@ class IdentityUser(AbstractIdentityUser):
         return relationship('IdentityUserClaim', back_populates='user')
 
     @declared_attr
-    def logins(cls) -> Mapped[List['IdentityUserClaim']]:
+    def logins(cls) -> Mapped[List['IdentityUserLogin']]:
         return relationship('IdentityUserLogin', back_populates='user')
 
     @declared_attr
-    def tokens(cls) -> Mapped[List['IdentityUserClaim']]:
+    def tokens(cls) -> Mapped[List['IdentityUserToken']]:
         return relationship('IdentityUserToken', back_populates='user')
 
     def __init__(
