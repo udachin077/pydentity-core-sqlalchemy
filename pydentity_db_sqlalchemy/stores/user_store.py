@@ -61,20 +61,20 @@ class UserStore(
     user_login_model: Type[TUserLogin] = IdentityUserLogin
     user_token_model: Type[TUserToken] = IdentityUserToken
 
-    InternalLoginProvider: Final[str] = '[FastAPIUserStore]'
-    AuthenticatorKeyTokenName: Final[str] = 'AuthenticatorKey'
-    RecoveryCodeTokenName: Final[str] = 'RecoveryCodes'
+    INTERNAL_LOGIN_PROVIDER: Final[str] = '[Pydentity:UserStore]'
+    AUTHENTICATOR_KEY_TOKEN_NAME: Final[str] = '[Pydentity:AuthenticatorKey]'
+    RECOVERY_CODE_TOKEN_NAME: Final[str] = '[Pydentity:RecoveryCodes]'
 
     def __init__(self, session: AsyncSession):
         self.session: AsyncSession = session
 
     def create_model_from_dict(self, **kwargs) -> TUser:
-        return self.user_model(**kwargs)
+        return self.user_model(**kwargs)  # type: ignore
 
-    async def save_changes(self):
+    async def save_changes(self) -> None:
         await self.session.commit()
 
-    async def refresh(self, user: TUser):
+    async def refresh(self, user: TUser) -> None:
         await self.session.refresh(user)
 
     async def all(self) -> list[TUser]:
@@ -469,16 +469,16 @@ class UserStore(
         user.two_factor_enabled = enabled
 
     async def get_authenticator_key(self, user: TUser) -> Optional[str]:
-        return await self.get_token(user, self.InternalLoginProvider, self.AuthenticatorKeyTokenName)
+        return await self.get_token(user, self.INTERNAL_LOGIN_PROVIDER, self.AUTHENTICATOR_KEY_TOKEN_NAME)
 
     async def set_authenticator_key(self, user: TUser, key: str) -> None:
-        return await self.set_token(user, self.InternalLoginProvider, self.AuthenticatorKeyTokenName, key)
+        return await self.set_token(user, self.INTERNAL_LOGIN_PROVIDER, self.AUTHENTICATOR_KEY_TOKEN_NAME, key)
 
     async def count_codes(self, user: TUser) -> int:
         if user is None:
             raise ArgumentNoneException('user')
 
-        merged_codes = (await self.get_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName)) or ""
+        merged_codes = (await self.get_token(user, self.INTERNAL_LOGIN_PROVIDER, self.RECOVERY_CODE_TOKEN_NAME)) or ""
 
         if merged_codes:
             return merged_codes.count(';') + 1
@@ -491,7 +491,7 @@ class UserStore(
         if not code:
             raise ArgumentNoneException('code')
 
-        merged_codes = (await self.get_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName)) or ""
+        merged_codes = (await self.get_token(user, self.INTERNAL_LOGIN_PROVIDER, self.RECOVERY_CODE_TOKEN_NAME)) or ""
         split_codes = merged_codes.split(';')
 
         if code in split_codes:
@@ -508,7 +508,7 @@ class UserStore(
             raise ArgumentNoneException('recovery_codes')
 
         merged_codes = ';'.join(recovery_codes)
-        return await self.set_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName, merged_codes)
+        return await self.set_token(user, self.INTERNAL_LOGIN_PROVIDER, self.RECOVERY_CODE_TOKEN_NAME, merged_codes)
 
     async def add_claims(self, user: TUser, *claims: Claim) -> None:
         if user is None:

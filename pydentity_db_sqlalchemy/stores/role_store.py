@@ -21,13 +21,13 @@ class RoleStore(IRoleClaimStore[TRole], IRoleStore[TRole], Generic[TRole]):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    def create_model_from_dict(self, **kwargs):
-        return self.role_model(**kwargs)
+    def create_model_from_dict(self, **kwargs) -> TRole:
+        return self.role_model(**kwargs)  # type: ignore
 
-    async def save_changes(self):
+    async def save_changes(self) -> None:
         await self.session.commit()
 
-    async def refresh(self, role: TRole):
+    async def refresh(self, role: TRole) -> None:
         await self.session.refresh(role)
 
     async def all(self) -> list[TRole]:

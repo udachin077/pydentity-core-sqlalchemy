@@ -2,6 +2,9 @@ from typing import Optional, List
 from uuid import uuid4
 
 import sqlalchemy as sa
+from pydentity import DefaultPersonalDataProtector
+from pydentity.abc import IPersonalDataProtector
+from pydentity.utils import get_device_uuid
 from sqlalchemy.orm import Mapped, mapped_column, declared_attr, relationship
 
 from pydentity_db_sqlalchemy.models.abstract import (
@@ -14,6 +17,7 @@ from pydentity_db_sqlalchemy.models.abstract import (
     AbstractIdentityUserToken,
     AbstractIdentityRoleClaim
 )
+from pydentity_db_sqlalchemy.types import ProtectedPersonalData
 
 __all__ = (
     'Model',
@@ -24,7 +28,14 @@ __all__ = (
     'IdentityUserLogin',
     'IdentityUserToken',
     'IdentityRoleClaim',
+    'use_personal_data_protector',
 )
+
+
+def use_personal_data_protector(protector: Optional[IPersonalDataProtector] = None):
+    if not protector:
+        protector = DefaultPersonalDataProtector(get_device_uuid())
+    ProtectedPersonalData.protector = protector
 
 
 class IdentityUser(AbstractIdentityUser):
