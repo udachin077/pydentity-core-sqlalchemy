@@ -2,11 +2,12 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from pydentity_db_sqlalchemy.models import Model
+from pydentity_db_sqlalchemy.models import Model, use_personal_data_protector
 
 
 @pytest.fixture(scope='session')
 def engine():
+    use_personal_data_protector()
     return create_async_engine('sqlite+aiosqlite://', echo=True)
 
 

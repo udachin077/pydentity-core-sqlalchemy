@@ -6,7 +6,7 @@ from pydentity.types import TKey, GUID
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from pydentity_db_sqlalchemy.types import ProtectedPersonalData
+from pydentity_db_sqlalchemy.types import ProtectedPersonalDataField
 
 __all__ = (
     'Model',
@@ -53,18 +53,18 @@ class AbstractIdentityUser(Model):
     else:
         access_failed_count: Mapped[int] = mapped_column(sa.Integer, default=0)
         concurrency_stamp: Mapped[Optional[GUID]] = mapped_column(sa.Text, nullable=True)
-        email: Mapped[Optional[str]] = mapped_column(ProtectedPersonalData(256), nullable=True)
+        email: Mapped[Optional[str]] = mapped_column(ProtectedPersonalDataField(256), nullable=True)
         email_confirmed: Mapped[bool] = mapped_column(sa.Boolean, default=False)
         lockout_enabled: Mapped[bool] = mapped_column(sa.Boolean, default=True)
         lockout_end: Mapped[Optional[datetime]] = mapped_column(sa.TIMESTAMP(timezone=True), nullable=True)
-        normalized_email: Mapped[Optional[str]] = mapped_column(ProtectedPersonalData(256), nullable=True)
-        normalized_username: Mapped[Optional[str]] = mapped_column(ProtectedPersonalData(256), nullable=True)
+        normalized_email: Mapped[Optional[str]] = mapped_column(ProtectedPersonalDataField(256), nullable=True)
+        normalized_username: Mapped[Optional[str]] = mapped_column(ProtectedPersonalDataField(256), nullable=True)
         password_hash: Mapped[Optional[str]] = mapped_column(sa.Text, nullable=True)
-        phone_number: Mapped[Optional[str]] = mapped_column(ProtectedPersonalData(256), nullable=True)
+        phone_number: Mapped[Optional[str]] = mapped_column(ProtectedPersonalDataField(256), nullable=True)
         phone_number_confirmed: Mapped[bool] = mapped_column(sa.Boolean, default=False)
         security_stamp: Mapped[Optional[GUID]] = mapped_column(sa.Text, nullable=True)
         two_factor_enabled: Mapped[bool] = mapped_column(sa.Boolean, default=False)
-        username: Mapped[Optional[str]] = mapped_column(ProtectedPersonalData(256), nullable=True)
+        username: Mapped[Optional[str]] = mapped_column(ProtectedPersonalDataField(256), nullable=True)
 
 
 class AbstractIdentityRole(Model):

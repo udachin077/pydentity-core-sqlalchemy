@@ -17,7 +17,7 @@ from pydentity_db_sqlalchemy.models.abstract import (
     AbstractIdentityUserToken,
     AbstractIdentityRoleClaim
 )
-from pydentity_db_sqlalchemy.types import ProtectedPersonalData
+from pydentity_db_sqlalchemy.types import ProtectedPersonalDataField
 
 __all__ = (
     'Model',
@@ -35,7 +35,7 @@ __all__ = (
 def use_personal_data_protector(protector: Optional[IPersonalDataProtector] = None):
     if not protector:
         protector = DefaultPersonalDataProtector(get_device_uuid())
-    ProtectedPersonalData.protector = protector
+    ProtectedPersonalDataField.protector = protector
 
 
 class IdentityUser(AbstractIdentityUser):

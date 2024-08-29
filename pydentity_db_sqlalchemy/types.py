@@ -4,7 +4,7 @@ import sqlalchemy as sa
 from pydentity.abc import IPersonalDataProtector
 
 
-class ProtectedPersonalData(sa.TypeDecorator):
+class ProtectedPersonalDataField(sa.TypeDecorator):
     impl = sa.String
     cache_ok = True
 
