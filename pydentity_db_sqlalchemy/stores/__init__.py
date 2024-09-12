@@ -1,2 +1,2 @@
-from .role_store import RoleStore
-from .user_store import UserStore
+from pydentity_db_sqlalchemy.stores.role_store import RoleStore
+from pydentity_db_sqlalchemy.stores.user_store import UserStore

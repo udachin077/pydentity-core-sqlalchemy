@@ -1,17 +1,17 @@
 from typing import Type, Generic, Optional
 from uuid import uuid4
 
-from pydentity.abc.stores import IRoleStore, IRoleClaimStore
-from pydentity.exc import ArgumentNoneException
-from pydentity.identity_result import IdentityResult
-from pydentity.security.claims import Claim
-from pydentity.types import TRole, TRoleClaim
+from pydenticore import IdentityResult
+from pydenticore.exc import ArgumentNoneException
+from pydenticore.interfaces.stores import IRoleClaimStore, IRoleStore
+from pydenticore.security.claims import Claim
+from pydenticore.types import TRole, TRoleClaim
 from sqlalchemy import select, and_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from pydentity_db_sqlalchemy.models import IdentityRole, IdentityRoleClaim
 
-__all__ = ('RoleStore',)
+__all__ = ("RoleStore",)
 
 
 class RoleStore(IRoleClaimStore[TRole], IRoleStore[TRole], Generic[TRole]):

@@ -2,7 +2,9 @@ from datetime import datetime
 from typing import Type, Generic, Final, Optional
 from uuid import uuid4
 
-from pydentity.abc.stores import (
+from pydenticore import IdentityResult, UserLoginInfo
+from pydenticore.exc import ArgumentNoneException, InvalidOperationException
+from pydenticore.interfaces.stores import (
     IUserAuthenticationTokenStore,
     IUserAuthenticatorKeyStore,
     IUserClaimStore,
@@ -13,29 +15,33 @@ from pydentity.abc.stores import (
     IUserPhoneNumberStore,
     IUserRoleStore,
     IUserSecurityStampStore,
+    IUserStore,
     IUserTwoFactorRecoveryCodeStore,
     IUserTwoFactorStore,
-    IUserStore
 )
-from pydentity.exc import ArgumentNoneException, InvalidOperationException
-from pydentity.identity_result import IdentityResult
-from pydentity.resources import Resources
-from pydentity.security.claims import Claim
-from pydentity.types import TRole, TUser, TUserRole, TUserClaim, TUserLogin, TUserToken
-from pydentity.user_login_info import UserLoginInfo
+from pydenticore.resources import Resources
+from pydenticore.security.claims import Claim
+from pydenticore.types import (
+    TRole,
+    TUser,
+    TUserClaim,
+    TUserLogin,
+    TUserRole,
+    TUserToken,
+)
 from sqlalchemy import select, delete, insert, update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from pydentity_db_sqlalchemy.models import (
-    IdentityUser,
     IdentityRole,
-    IdentityUserRole,
+    IdentityUser,
     IdentityUserClaim,
     IdentityUserLogin,
-    IdentityUserToken
+    IdentityUserRole,
+    IdentityUserToken,
 )
 
-__all__ = ('UserStore',)
+__all__ = ("UserStore",)
 
 
 class UserStore(
@@ -61,9 +67,9 @@ class UserStore(
     user_login_model: Type[TUserLogin] = IdentityUserLogin
     user_token_model: Type[TUserToken] = IdentityUserToken
 
-    INTERNAL_LOGIN_PROVIDER: Final[str] = '[Pydentity:UserStore]'
-    AUTHENTICATOR_KEY_TOKEN_NAME: Final[str] = '[Pydentity:AuthenticatorKey]'
-    RECOVERY_CODE_TOKEN_NAME: Final[str] = '[Pydentity:RecoveryCodes]'
+    INTERNAL_LOGIN_PROVIDER: Final[str] = "[Pydentity:UserStore]"
+    AUTHENTICATOR_KEY_TOKEN_NAME: Final[str] = "[Pydentity:AuthenticatorKey]"
+    RECOVERY_CODE_TOKEN_NAME: Final[str] = "[Pydentity:RecoveryCodes]"
 
     def __init__(self, session: AsyncSession):
         self.session: AsyncSession = session

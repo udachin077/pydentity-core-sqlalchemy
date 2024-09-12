@@ -1,10 +1,10 @@
-from typing import Optional, List
+from typing import List
 from uuid import uuid4
 
 import sqlalchemy as sa
-from pydentity import DefaultPersonalDataProtector
-from pydentity.abc import IPersonalDataProtector
-from pydentity.utils import get_device_uuid
+from pydenticore import DefaultPersonalDataProtector
+from pydenticore.interfaces import IPersonalDataProtector
+from pydenticore.utils import get_device_uuid
 from sqlalchemy.orm import Mapped, mapped_column, declared_attr, relationship
 
 from pydentity_db_sqlalchemy.models.abstract import (
@@ -15,9 +15,9 @@ from pydentity_db_sqlalchemy.models.abstract import (
     AbstractIdentityUserClaim,
     AbstractIdentityUserLogin,
     AbstractIdentityUserToken,
-    AbstractIdentityRoleClaim
+    AbstractIdentityRoleClaim,
 )
-from pydentity_db_sqlalchemy.types import ProtectedPersonalDataField
+from pydentity_db_sqlalchemy.models.fields import ProtectedPersonalDataField
 
 __all__ = (
     'Model',
@@ -32,7 +32,7 @@ __all__ = (
 )
 
 
-def use_personal_data_protector(protector: Optional[IPersonalDataProtector] = None):
+def use_personal_data_protector(protector: IPersonalDataProtector | None = None):
     if not protector:
         protector = DefaultPersonalDataProtector(get_device_uuid())
     ProtectedPersonalDataField.protector = protector
@@ -67,12 +67,7 @@ class IdentityUser(AbstractIdentityUser):
     def tokens(cls) -> Mapped[List['IdentityUserToken']]:
         return relationship('IdentityUserToken', back_populates='user')
 
-    def __init__(
-            self,
-            email: str,
-            username: Optional[str] = None,
-            **kwargs
-    ):
+    def __init__(self, email: str, username: str | None = None, **kwargs):
         super().__init__(
             id=str(uuid4()),
             email=email,
@@ -97,11 +92,7 @@ class IdentityRole(AbstractIdentityRole):
         return relationship('IdentityRoleClaim', back_populates='role')
 
     def __init__(self, name: str, **kwargs):
-        super().__init__(
-            id=str(uuid4()),
-            name=name,
-            **kwargs
-        )
+        super().__init__(id=str(uuid4()), name=name, **kwargs)
 
     def __str__(self):
         return self.name or self.id

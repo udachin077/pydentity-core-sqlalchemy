@@ -1,14 +1,12 @@
-from typing import Optional
-
 import sqlalchemy as sa
-from pydentity.abc import IPersonalDataProtector
+from pydenticore.interfaces import IPersonalDataProtector
 
 
 class ProtectedPersonalDataField(sa.TypeDecorator):
     impl = sa.String
     cache_ok = True
 
-    protector: Optional[IPersonalDataProtector] = None
+    protector: IPersonalDataProtector | None = None
 
     def process_bind_param(self, value, dialect):
         if value and self.protector:

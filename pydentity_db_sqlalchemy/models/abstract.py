@@ -2,11 +2,11 @@ from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
 import sqlalchemy as sa
-from pydentity.types import TKey, GUID
+from pydenticore.types import TKey, GUID
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from pydentity_db_sqlalchemy.types import ProtectedPersonalDataField
+from pydentity_db_sqlalchemy.models.fields import ProtectedPersonalDataField
 
 __all__ = (
     'Model',

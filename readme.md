@@ -1,3 +1,10 @@
+## Install
+
+    pip install pydentity-db-sqlalchemy
+
+## Example
+
+```python
 import asyncio
 
 import sqlalchemy as sa
@@ -28,3 +35,4 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
+```

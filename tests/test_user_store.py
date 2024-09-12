@@ -3,8 +3,8 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from pydentity.security.claims import Claim
-from pydentity.user_login_info import UserLoginInfo
+from pydenticore import UserLoginInfo
+from pydenticore.security.claims import Claim
 from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 
