@@ -1,6 +1,6 @@
-## Install
+## Installation
 
-    pip install pydentity-db-sqlalchemy
+    $ pip install pydentity-db-sqlalchemy
 
 ## Example
 

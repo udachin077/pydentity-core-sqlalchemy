@@ -2,7 +2,8 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from pydentity_db_sqlalchemy.models import Model, use_personal_data_protector
+from pydentity_db_sqlalchemy import use_personal_data_protector
+from pydentity_db_sqlalchemy.models import Model
 
 
 @pytest.fixture(scope='session')

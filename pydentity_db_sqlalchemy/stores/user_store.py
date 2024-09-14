@@ -32,15 +32,6 @@ from pydenticore.types import (
 from sqlalchemy import select, delete, insert, update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from pydentity_db_sqlalchemy.models import (
-    IdentityRole,
-    IdentityUser,
-    IdentityUserClaim,
-    IdentityUserLogin,
-    IdentityUserRole,
-    IdentityUserToken,
-)
-
 __all__ = ("UserStore",)
 
 
@@ -60,12 +51,12 @@ class UserStore(
     IUserStore[TUser],
     Generic[TUser]
 ):
-    user_model: Type[TUser] = IdentityUser
-    role_model: Type[TRole] = IdentityRole
-    user_role_model: Type[TUserRole] = IdentityUserRole
-    user_claim_model: Type[TUserClaim] = IdentityUserClaim
-    user_login_model: Type[TUserLogin] = IdentityUserLogin
-    user_token_model: Type[TUserToken] = IdentityUserToken
+    user_model: Type[TUser]
+    role_model: Type[TRole]
+    user_role_model: Type[TUserRole]
+    user_claim_model: Type[TUserClaim]
+    user_login_model: Type[TUserLogin]
+    user_token_model: Type[TUserToken]
 
     INTERNAL_LOGIN_PROVIDER: Final[str] = "[Pydentity:UserStore]"
     AUTHENTICATOR_KEY_TOKEN_NAME: Final[str] = "[Pydentity:AuthenticatorKey]"
@@ -75,7 +66,7 @@ class UserStore(
         self.session: AsyncSession = session
 
     def create_model_from_dict(self, **kwargs) -> TUser:
-        return self.user_model(**kwargs)  # type: ignore
+        return self.user_model(**kwargs)
 
     async def save_changes(self) -> None:
         await self.session.commit()

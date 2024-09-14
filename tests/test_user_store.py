@@ -8,7 +8,7 @@ from pydenticore.security.claims import Claim
 from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 
-from pydentity_db_sqlalchemy.models import IdentityUser, IdentityRole
+from pydentity_db_sqlalchemy.models import *
 from pydentity_db_sqlalchemy.stores.user_store import UserStore
 
 
@@ -44,6 +44,12 @@ async def create_roles(session):
 
 @pytest_asyncio.fixture
 async def store(session) -> AsyncGenerator[UserStore, None]:
+    UserStore.user_model = IdentityUser
+    UserStore.user_role_model = IdentityUserRole
+    UserStore.user_claim_model = IdentityUserClaim
+    UserStore.user_token_model = IdentityUserToken
+    UserStore.user_login_model = IdentityUserLogin
+    UserStore.role_model = IdentityRole
     yield UserStore(session)
 
 

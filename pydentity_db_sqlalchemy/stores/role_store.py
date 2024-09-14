@@ -9,20 +9,18 @@ from pydenticore.types import TRole, TRoleClaim
 from sqlalchemy import select, and_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from pydentity_db_sqlalchemy.models import IdentityRole, IdentityRoleClaim
-
 __all__ = ("RoleStore",)
 
 
 class RoleStore(IRoleClaimStore[TRole], IRoleStore[TRole], Generic[TRole]):
-    role_model: Type[TRole] = IdentityRole
-    role_claim_model: Type[TRoleClaim] = IdentityRoleClaim
+    role_model: Type[TRole]
+    role_claim_model: Type[TRoleClaim]
 
     def __init__(self, session: AsyncSession):
         self.session = session
 
     def create_model_from_dict(self, **kwargs) -> TRole:
-        return self.role_model(**kwargs)  # type: ignore
+        return self.role_model(**kwargs)
 
     async def save_changes(self) -> None:
         await self.session.commit()

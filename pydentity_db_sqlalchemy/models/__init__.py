@@ -2,43 +2,34 @@ from typing import List
 from uuid import uuid4
 
 import sqlalchemy as sa
-from pydenticore import DefaultPersonalDataProtector
-from pydenticore.interfaces import IPersonalDataProtector
-from pydenticore.utils import get_device_uuid
 from sqlalchemy.orm import Mapped, mapped_column, declared_attr, relationship
 
 from pydentity_db_sqlalchemy.models.abstract import (
-    Model,
-    AbstractIdentityUser,
     AbstractIdentityRole,
-    AbstractIdentityUserRole,
+    AbstractIdentityRoleClaim,
+    AbstractIdentityUser,
     AbstractIdentityUserClaim,
     AbstractIdentityUserLogin,
+    AbstractIdentityUserRole,
     AbstractIdentityUserToken,
-    AbstractIdentityRoleClaim,
 )
-from pydentity_db_sqlalchemy.models.fields import ProtectedPersonalDataField
+from pydentity_db_sqlalchemy.models.base import Model
 
 __all__ = (
-    'Model',
-    'IdentityUser',
     'IdentityRole',
-    'IdentityUserRole',
+    'IdentityRoleClaim',
+    'IdentityUser',
     'IdentityUserClaim',
     'IdentityUserLogin',
+    'IdentityUserRole',
     'IdentityUserToken',
-    'IdentityRoleClaim',
-    'use_personal_data_protector',
+    'Model',
 )
-
-
-def use_personal_data_protector(protector: IPersonalDataProtector | None = None):
-    if not protector:
-        protector = DefaultPersonalDataProtector(get_device_uuid())
-    ProtectedPersonalDataField.protector = protector
 
 
 class IdentityUser(AbstractIdentityUser):
+    """The default implementation of AbstractIdentityUser which uses a string as a primary key."""
+
     __personal_data__ = (
         'id',
         'username',
@@ -46,7 +37,7 @@ class IdentityUser(AbstractIdentityUser):
         'email_confirmed',
         'phone_number',
         'phone_number_confirmed',
-        'two_factor_enabled'
+        'two_factor_enabled',
     )
 
     id: Mapped[str] = mapped_column(sa.String(450))
@@ -81,6 +72,8 @@ class IdentityUser(AbstractIdentityUser):
 
 
 class IdentityRole(AbstractIdentityRole):
+    """The default implementation of AbstractIdentityRole which uses a string as the primary key."""
+
     id: Mapped[str] = mapped_column(sa.String(450))
 
     @declared_attr
@@ -99,10 +92,11 @@ class IdentityRole(AbstractIdentityRole):
 
 
 class IdentityUserRole(AbstractIdentityUserRole):
-    pass
+    """Represents the link between a user and a role."""
 
 
 class IdentityUserClaim(AbstractIdentityUserClaim):
+    """Represents a claim that a user possesses."""
 
     @declared_attr
     def user(self) -> Mapped['IdentityUser']:
@@ -110,6 +104,7 @@ class IdentityUserClaim(AbstractIdentityUserClaim):
 
 
 class IdentityUserLogin(AbstractIdentityUserLogin):
+    """Represents a login and its associated provider for a user."""
 
     @declared_attr
     def user(self) -> Mapped['IdentityUser']:
@@ -117,6 +112,8 @@ class IdentityUserLogin(AbstractIdentityUserLogin):
 
 
 class IdentityUserToken(AbstractIdentityUserToken):
+    """Represents an authentication token for a user."""
+
     __personal_data__ = ('value',)
 
     @declared_attr
@@ -125,6 +122,7 @@ class IdentityUserToken(AbstractIdentityUserToken):
 
 
 class IdentityRoleClaim(AbstractIdentityRoleClaim):
+    """Represents a claim that is granted to all users within a role."""
 
     @declared_attr
     def role(self) -> Mapped['IdentityRole']:

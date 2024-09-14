@@ -3,27 +3,23 @@ from typing import Optional, TYPE_CHECKING
 
 import sqlalchemy as sa
 from pydenticore.types import TKey, GUID
-from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 
-from pydentity_db_sqlalchemy.models.fields import ProtectedPersonalDataField
+from pydentity_db_sqlalchemy.fields import ProtectedPersonalDataField
+from pydentity_db_sqlalchemy.models.base import Model
 
 __all__ = (
-    'Model',
-    'AbstractIdentityUser',
     'AbstractIdentityRole',
-    'AbstractIdentityUserRole',
-    'AbstractIdentityUserClaim',
     'AbstractIdentityRoleClaim',
+    'AbstractIdentityUser',
+    'AbstractIdentityUserClaim',
+    'AbstractIdentityUserLogin',
+    'AbstractIdentityUserRole',
     'AbstractIdentityUserToken',
-    'AbstractIdentityUserLogin'
+    'Model',
 )
 
 MAX_KEY_LENGTH = 128
-
-
-class Model(AsyncAttrs, DeclarativeBase):
-    pass
 
 
 class AbstractIdentityUser(Model):

@@ -7,7 +7,7 @@ from pydenticore.security.claims import Claim
 from sqlalchemy import select, delete
 from sqlalchemy.exc import IntegrityError
 
-from pydentity_db_sqlalchemy.models import IdentityRole
+from pydentity_db_sqlalchemy.models import IdentityRole, IdentityRoleClaim
 from pydentity_db_sqlalchemy.stores.role_store import RoleStore
 
 
@@ -18,6 +18,8 @@ async def clear(session):
 
 @pytest_asyncio.fixture
 async def store(session) -> AsyncGenerator[RoleStore, None]:
+    RoleStore.role_model = IdentityRole
+    RoleStore.role_claim_model = IdentityRoleClaim
     yield RoleStore(session)
 
 
