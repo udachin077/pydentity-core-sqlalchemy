@@ -1,7 +1,7 @@
 from typing import override
 
 import sqlalchemy as sa
-from pydenticore.interfaces import IPersonalDataProtector
+from pydentity.interfaces import IPersonalDataProtector
 
 
 class ProtectedPersonalDataField(sa.TypeDecorator):

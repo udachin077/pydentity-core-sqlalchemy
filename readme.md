@@ -1,6 +1,6 @@
 ## Installation
 
-    $ pip install pydentity-db-sqlalchemy
+    $ pip install pydentity-core-sqlalchemy
 
 ## Example
 
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import mapped_column, Mapped
 
-from pydentity_db_sqlalchemy.models import Model, IdentityUser
+from pydentity_db.base import Model, IdentityUser
 
 
 class CustomUser(IdentityUser):

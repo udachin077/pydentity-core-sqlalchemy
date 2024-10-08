@@ -4,7 +4,8 @@ import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import mapped_column, Mapped
 
-from pydentity_db_sqlalchemy.models import Model, IdentityUser
+from pydentity_db.models import Model
+from pydentity_db.models import IdentityUser
 
 
 class CustomUser(IdentityUser):

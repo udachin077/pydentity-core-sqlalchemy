@@ -1,8 +1,7 @@
-from pydenticore import DefaultPersonalDataProtector
-from pydenticore.interfaces import IPersonalDataProtector
-from pydenticore.utils import get_device_uuid
+from pydentity import DefaultPersonalDataProtector
+from pydentity.interfaces import IPersonalDataProtector
 
-from pydentity_db_sqlalchemy.fields import ProtectedPersonalDataField
+from pydentity_db.fields import ProtectedPersonalDataField
 
 __all__ = ("use_personal_data_protector",)
 
@@ -17,7 +16,4 @@ def use_personal_data_protector(protector: IPersonalDataProtector | None = None)
     :param protector:
     :return:
     """
-    ProtectedPersonalDataField.protector = protector or DefaultPersonalDataProtector(
-        "ProtectedPersonalDataField",
-        get_device_uuid()
-    )
+    ProtectedPersonalDataField.protector = protector or DefaultPersonalDataProtector("ProtectedPersonalDataField")

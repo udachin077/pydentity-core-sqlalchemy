@@ -3,13 +3,13 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from pydenticore import UserLoginInfo
-from pydenticore.security.claims import Claim
+from pydentity import UserLoginInfo
+from pydentity.security.claims import Claim
 from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 
-from pydentity_db_sqlalchemy.models import *
-from pydentity_db_sqlalchemy.stores.user_store import UserStore
+from pydentity_db.models import *
+from pydentity_db.stores.user_store import UserStore
 
 
 async def _find_by_email(session, email: str) -> IdentityUser | None:

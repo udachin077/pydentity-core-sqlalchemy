@@ -1,15 +1,13 @@
 [tool.poetry]
-name = "pydentity-db-sqlalchemy"
-version = "0.1.3"
+name = "pydentity-core-sqlalchemy"
+version = "0.1.0"
 description = "Database adapter for SQLAlchemy."
 authors = ["Udachin Ivan <pypi.udachin@yandex.ru>"]
 license = "MIT"
-homepage = "https://github.com/udachin077/pydentity-db-sqlalchemy"
-repository = "https://github.com/udachin077/pydentity-db-sqlalchemy.git"
-exclude = [
-    "tests",
-    "example"
-]
+homepage = "https://github.com/udachin077/pydentity-core-sqlalchemy"
+repository = "https://github.com/udachin077/pydentity-core-sqlalchemy.git"
+exclude = ["tests", "example"]
+packages = [{ include = "pydentity_db", from = "." }]
 
 [tool.poetry.dependencies]
 python = "^3.12"

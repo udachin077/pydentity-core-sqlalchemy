@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Type, Generic, Final, Optional
+from typing import Type, Generic, Final, Optional, Any
 from uuid import uuid4
 
-from pydenticore import IdentityResult, UserLoginInfo
-from pydenticore.exc import ArgumentNoneException, InvalidOperationException
-from pydenticore.interfaces.stores import (
+from pydentity import IdentityResult, UserLoginInfo
+from pydentity.exc import ArgumentNoneException, InvalidOperationException
+from pydentity.interfaces.stores import (
     IUserAuthenticationTokenStore,
     IUserAuthenticatorKeyStore,
     IUserClaimStore,
@@ -13,15 +13,16 @@ from pydenticore.interfaces.stores import (
     IUserLoginStore,
     IUserPasswordStore,
     IUserPhoneNumberStore,
+    IUserPersonalDataStore,
     IUserRoleStore,
     IUserSecurityStampStore,
     IUserStore,
     IUserTwoFactorRecoveryCodeStore,
     IUserTwoFactorStore,
 )
-from pydenticore.resources import Resources
-from pydenticore.security.claims import Claim
-from pydenticore.types import (
+from pydentity.resources import Resources
+from pydentity.security.claims import Claim
+from pydentity.types import (
     TRole,
     TUser,
     TUserClaim,
@@ -31,6 +32,15 @@ from pydenticore.types import (
 )
 from sqlalchemy import select, delete, insert, update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from pydentity_db.models import (
+    IdentityRole,
+    IdentityUser,
+    IdentityUserClaim,
+    IdentityUserLogin,
+    IdentityUserRole,
+    IdentityUserToken,
+)
 
 __all__ = ("UserStore",)
 
@@ -43,6 +53,7 @@ class UserStore(
     IUserLockoutStore[TUser],
     IUserLoginStore[TUser],
     IUserPasswordStore[TUser],
+    IUserPersonalDataStore[TUser],
     IUserPhoneNumberStore[TUser],
     IUserRoleStore[TUser],
     IUserSecurityStampStore[TUser],
@@ -51,12 +62,12 @@ class UserStore(
     IUserStore[TUser],
     Generic[TUser]
 ):
-    user_model: Type[TUser]
-    role_model: Type[TRole]
-    user_role_model: Type[TUserRole]
-    user_claim_model: Type[TUserClaim]
-    user_login_model: Type[TUserLogin]
-    user_token_model: Type[TUserToken]
+    user_model: Type[TUser] = IdentityUser
+    role_model: Type[TRole] = IdentityRole
+    user_role_model: Type[TUserRole] = IdentityUserRole
+    user_claim_model: Type[TUserClaim] = IdentityUserClaim
+    user_login_model: Type[TUserLogin] = IdentityUserLogin
+    user_token_model: Type[TUserToken] = IdentityUserToken
 
     INTERNAL_LOGIN_PROVIDER: Final[str] = "[Pydentity:UserStore]"
     AUTHENTICATOR_KEY_TOKEN_NAME: Final[str] = "[Pydentity:AuthenticatorKey]"
@@ -66,7 +77,7 @@ class UserStore(
         self.session: AsyncSession = session
 
     def create_model_from_dict(self, **kwargs) -> TUser:
-        return self.user_model(**kwargs)
+        return self.user_model(**kwargs)  # noqa
 
     async def save_changes(self) -> None:
         await self.session.commit()
@@ -75,8 +86,7 @@ class UserStore(
         await self.session.refresh(user)
 
     async def all(self) -> list[TUser]:
-        query = select(self.user_model)
-        return list((await self.session.scalars(query)).all())
+        return list((await self.session.scalars(select(self.user_model))).all())
 
     async def create(self, user: TUser) -> IdentityResult:
         if user is None:
@@ -108,16 +118,16 @@ class UserStore(
         if user_id is None:
             raise ArgumentNoneException('user_id')
 
-        query = select(self.user_model).where(self.user_model.id == user_id)
-        return await self._find_user(query)
+        return await self._find_user(select(self.user_model).where(self.user_model.id == user_id))
 
+    # noinspection PyTypeChecker
     async def find_by_name(self, normalized_username: str) -> Optional[TUser]:
         if normalized_username is None:
             raise ArgumentNoneException('normalized_username')
 
-        query = select(self.user_model).where(
-            self.user_model.normalized_username == normalized_username)  # type: ignore
-        return await self._find_user(query)
+        return await self._find_user(
+            select(self.user_model).where(self.user_model.normalized_username == normalized_username)
+        )
 
     async def get_user_id(self, user: TUser) -> str:
         if user is None:
@@ -149,12 +159,14 @@ class UserStore(
 
         user.normalized_username = normalized_name
 
+    # noinspection PyTypeChecker
     async def find_by_email(self, normalized_email: str) -> Optional[TUser]:
         if normalized_email is None:
             raise ArgumentNoneException('normalized_email')
 
-        query = select(self.user_model).where(self.user_model.normalized_email == normalized_email)  # type: ignore
-        return await self._find_user(query)
+        return await self._find_user(
+            select(self.user_model).where(self.user_model.normalized_email == normalized_email)
+        )
 
     async def get_email(self, user: TUser) -> Optional[str]:
         if user is None:
@@ -297,8 +309,7 @@ class UserStore(
             raise ArgumentNoneException('normalized_role_name')
 
         if role := await self._find_role(normalized_role_name):
-            query = insert(self.user_role_model).values(user_id=user.id, role_id=role.id)
-            await self.session.execute(query)
+            await self.session.execute(insert(self.user_role_model).values(user_id=user.id, role_id=role.id))
             return
 
         raise InvalidOperationException(Resources.RoleNotFound(normalized_role_name))
@@ -314,8 +325,8 @@ class UserStore(
                 self.role_model.id == self.user_role_model.role_id
             )
         )
-        roles = (await self.session.scalars(query)).all()
-        return list(roles)
+        roles = await self.session.scalars(query)
+        return list(roles.all())
 
     async def get_users_in_role(self, normalized_role_name: str) -> list[TUser]:
         if not normalized_role_name:
@@ -381,16 +392,15 @@ class UserStore(
         )
 
         if user_login := (await self.session.scalars(query)).one_or_none():
-            query = select(self.user_model).where(self.user_model.id == user_login.user_id)  # type: ignore
-            return await self._find_user(query)
+            return await self._find_user(select(self.user_model).where(self.user_model.id == user_login.user_id))
 
     async def get_logins(self, user: TUser) -> list[UserLoginInfo]:
         if user is None:
             raise ArgumentNoneException('user')
 
-        query = select(self.user_login_model).where(self.user_login_model.user_id == user.id)  # type: ignore
-        user_logins = (await self.session.scalars(query)).all()
-        return [self._create_user_login_info(ul) for ul in user_logins]
+        query = select(self.user_login_model).where(self.user_login_model.user_id == user.id)
+        user_logins = await self.session.scalars(query)
+        return [self._create_user_login_info(ul) for ul in user_logins.all()]
 
     async def remove_login(self, user: TUser, login_provider: str, provider_key: str) -> None:
         if user is None:
@@ -504,8 +514,12 @@ class UserStore(
         if not recovery_codes:
             raise ArgumentNoneException('recovery_codes')
 
-        merged_codes = ';'.join(recovery_codes)
-        return await self.set_token(user, self.INTERNAL_LOGIN_PROVIDER, self.RECOVERY_CODE_TOKEN_NAME, merged_codes)
+        return await self.set_token(
+            user,
+            self.INTERNAL_LOGIN_PROVIDER,
+            self.RECOVERY_CODE_TOKEN_NAME,
+            ';'.join(recovery_codes)
+        )
 
     async def add_claims(self, user: TUser, *claims: Claim) -> None:
         if user is None:
@@ -522,7 +536,7 @@ class UserStore(
 
         query = (
             select(self.user_claim_model)
-            .where(self.user_claim_model.user_id == user.id)  # type: ignore
+            .where(self.user_claim_model.user_id == user.id)
         )
         user_claims = (await self.session.scalars(query)).all()
         return [self._create_claim(uc) for uc in user_claims]
@@ -537,8 +551,8 @@ class UserStore(
                 self.user_claim_model.claim_value == claim.value
             )
         )
-        user_claims = (await self.session.scalars(query)).all()
-        return [await uc.awaitable_attrs.user for uc in user_claims]
+        user_claims = await self.session.scalars(query)
+        return [await uc.awaitable_attrs.user for uc in user_claims.all()]
 
     async def remove_claims(self, user: TUser, *claims: Claim) -> None:
         if user is None:
@@ -579,6 +593,15 @@ class UserStore(
         ).values(claim_type=new_claim.type, claim_value=new_claim.value)
 
         await self.session.execute(query)
+
+    async def get_personal_data(self, user: TUser) -> dict[str, Any] | None:
+        if hasattr(user, '__personal_data__'):
+            return {p: getattr(user, p) for p in getattr(user, '__personal_data__')}
+
+        raise ValueError(
+            f"The model '{type(user)}' does not support receiving personal data. "
+            f"The model must have the '__personal_data__' attribute, which lists the fields related to personal data."
+        )
 
     def _create_claim(self, model: TUserClaim) -> Claim:  # noqa
         return Claim(

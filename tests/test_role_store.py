@@ -3,12 +3,12 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from pydenticore.security.claims import Claim
+from pydentity.security.claims import Claim
 from sqlalchemy import select, delete
 from sqlalchemy.exc import IntegrityError
 
-from pydentity_db_sqlalchemy.models import IdentityRole, IdentityRoleClaim
-from pydentity_db_sqlalchemy.stores.role_store import RoleStore
+from pydentity_db.models import IdentityRole, IdentityRoleClaim
+from pydentity_db.stores.role_store import RoleStore
 
 
 @pytest_asyncio.fixture(autouse=True)
