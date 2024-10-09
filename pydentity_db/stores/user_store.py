@@ -42,7 +42,11 @@ from pydentity_db.models import (
     IdentityUserToken,
 )
 
-__all__ = ("UserStore",)
+__all__ = ("UserStore", "PersonalDataError",)
+
+
+class PersonalDataError(Exception):
+    pass
 
 
 class UserStore(
@@ -598,7 +602,7 @@ class UserStore(
         if hasattr(user, '__personal_data__'):
             return {p: getattr(user, p) for p in getattr(user, '__personal_data__')}
 
-        raise ValueError(
+        raise PersonalDataError(
             f"The model '{type(user)}' does not support receiving personal data. "
             f"The model must have the '__personal_data__' attribute, which lists the fields related to personal data."
         )
