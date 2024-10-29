@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Type, Generic, Final, Optional, Any
 from uuid import uuid4
 
@@ -266,13 +266,15 @@ class UserStore(
         if user is None:
             raise ArgumentNoneException('user')
 
-        return user.lockout_end
+        lockout_end = user.lockout_end
+        return lockout_end.astimezone(UTC) if lockout_end else lockout_end
 
     async def increment_access_failed_count(self, user: TUser) -> int:
         if user is None:
             raise ArgumentNoneException('user')
 
-        return user.access_failed_count + 1
+        user.access_failed_count += 1
+        return user.access_failed_count
 
     async def reset_access_failed_count(self, user: TUser) -> None:
         if user is None:

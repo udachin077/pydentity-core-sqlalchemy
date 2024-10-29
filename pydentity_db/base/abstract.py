@@ -56,7 +56,7 @@ class AbstractIdentityUser(Model):
         email: Mapped[Optional[str]] = mapped_column(ProtectedPersonalDataField(256), nullable=True)
         email_confirmed: Mapped[bool] = mapped_column(sa.Boolean, default=False)
         lockout_enabled: Mapped[bool] = mapped_column(sa.Boolean, default=True)
-        lockout_end: Mapped[Optional[datetime]] = mapped_column(sa.TIMESTAMP(timezone=True), nullable=True)
+        lockout_end: Mapped[Optional[datetime]] = mapped_column(sa.TIMESTAMP, nullable=True)
         normalized_email: Mapped[Optional[str]] = mapped_column(ProtectedPersonalDataField(256), nullable=True)
         normalized_username: Mapped[Optional[str]] = mapped_column(ProtectedPersonalDataField(256), nullable=True)
         password_hash: Mapped[Optional[str]] = mapped_column(sa.Text, nullable=True)
